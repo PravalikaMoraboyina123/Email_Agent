@@ -69,17 +69,21 @@ class InboxPilotAgent:
                     base_score=analysis.priority_score
                 )
 
-                # 4. Multi-Tier Decision Engine Threshold Evaluation
-                is_immediate = (
-                    analysis.priority_score >= settings.IMMEDIATE_PRIORITY_THRESHOLD or
-                    (analysis.opportunity_score >= settings.OPPORTUNITY_SCORE_THRESHOLD and 
-                     analysis.category.value in ["Placement", "Internship", "Job Opportunity", "Interview"])
-                ) and analysis.category.value != "Advertisement"
-
-                if analysis.priority_score >= settings.IMPORTANT_PRIORITY_THRESHOLD or is_immediate:
+                # 4. Decision Engine: every important email is eligible for an immediate alert.
+                # Focus Mode suppresses the alert without changing the AI analysis or memory record.
+                if analysis.priority_score >= settings.IMPORTANT_PRIORITY_THRESHOLD or (
+                    analysis.opportunity_score >= settings.OPPORTUNITY_SCORE_THRESHOLD
+                    and analysis.category.value in ["Placement", "Internship", "Job Opportunity", "Interview"]
+                ):
                     analysis.is_important = True
 
-                # 5. Immediate Spoken Notification for Urgent Items
+                is_immediate = (
+                    analysis.is_important
+                    and analysis.category.value not in ["Advertisement", "Spam"]
+                    and not settings.FOCUS_MODE_ENABLED
+                )
+
+                # 5. Immediate Spoken Notification for Important Items
                 voice_sent = False
                 if is_immediate:
                     spoken_alert = self._build_live_speech_alert(email, analysis)
@@ -142,8 +146,8 @@ class InboxPilotAgent:
 
         db: Session = SessionLocal()
         try:
-            # 2. Fetch all unopened important emails
-            unread_important = memory_manager.get_unread_important_emails(db, limit=10)
+            # 2. Build a briefing from all emails in the recent 24-hour window.
+            recent_emails = memory_manager.get_recent_emails(db, hours=24)
 
             emails_data = [
                 {
@@ -154,7 +158,7 @@ class InboxPilotAgent:
                     "deadline": record.deadline,
                     "recommended_action": record.recommended_action
                 }
-                for record in unread_important
+                for record in recent_emails
             ]
 
             # 3. Generate audio briefing text via Ollama
@@ -169,7 +173,7 @@ class InboxPilotAgent:
             memory_manager.log_routine_execution(
                 db=db,
                 routine_type="Morning Briefing",
-                count=len(unread_important),
+                count=len(recent_emails),
                 speech=briefing_text,
                 spoken=True
             )
@@ -177,7 +181,7 @@ class InboxPilotAgent:
             logger.info("================ Morning Routine Completed ================")
             return {
                 "briefing_text": briefing_text,
-                "important_emails_count": len(unread_important)
+                "emails_in_briefing": len(recent_emails)
             }
 
         finally:
@@ -194,21 +198,28 @@ class InboxPilotAgent:
         db: Session = SessionLocal()
         try:
             today_records = memory_manager.get_today_emails(db)
-            unread_important = memory_manager.get_unread_important_emails(db)
 
-            # Calculate category statistics
+            # Calculate category statistics for every email received today.
             daily_stats = {}
             for record in today_records:
                 daily_stats[record.category] = daily_stats.get(record.category, 0) + 1
 
-            unread_data = [
-                {"subject": r.subject, "deadline": r.deadline or "Soon"}
-                for r in unread_important
+            # Include every email in the evening briefing.
+            all_today_data = [
+                {
+                    "subject": r.subject,
+                    "sender": r.sender,
+                    "category": r.category,
+                    "summary": r.summary,
+                    "deadline": r.deadline,
+                    "recommended_action": r.recommended_action
+                }
+                for r in today_records
             ]
 
             briefing_text = llm_service.generate_evening_briefing_script(
                 daily_stats=daily_stats,
-                unread_important=unread_data
+                unread_important=all_today_data
             )
 
             voice_service.speak(briefing_text, priority=True)
@@ -225,7 +236,7 @@ class InboxPilotAgent:
             return {
                 "briefing_text": briefing_text,
                 "total_today": len(today_records),
-                "unopened_important": len(unread_important)
+                "emails_in_briefing": len(today_records)
             }
 
         finally:
