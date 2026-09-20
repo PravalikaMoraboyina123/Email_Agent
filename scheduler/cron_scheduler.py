@@ -15,7 +15,7 @@ scheduler = BackgroundScheduler(daemon=True)
 
 
 def trigger_live_scan_job():
-    """Wrapper function executing live scan daemon job."""
+    """Run the near-real-time email scan for newly arrived unread messages."""
     logger.info("[CRON JOB] Executing continuous live email scan...")
     try:
         agent.process_new_emails()
@@ -49,7 +49,7 @@ def start_scheduler():
         logger.warning("Scheduler daemon is already active.")
         return
 
-    # 1. Register Live Email Scan (Every X seconds)
+    # 1. Register near-real-time Live Email Scan
     scheduler.add_job(
         trigger_live_scan_job,
         trigger=IntervalTrigger(seconds=settings.EMAIL_CHECK_INTERVAL_SECONDS),
@@ -79,7 +79,7 @@ def start_scheduler():
     )
 
     scheduler.start()
-    logger.info(f"APScheduler daemon initialized successfully! Schedules: Live Scan ({settings.LIVE_SCAN_INTERVAL_MINUTES}m), Morning ({settings.MORNING_ROUTINE_TIME}), Evening ({settings.EVENING_ROUTINE_TIME}).")
+    logger.info(f"APScheduler daemon initialized successfully! Schedules: Live Scan (every {settings.EMAIL_CHECK_INTERVAL_SECONDS}s), Morning ({settings.MORNING_ROUTINE_TIME}), Evening ({settings.EVENING_ROUTINE_TIME}).")
 
 
 def stop_scheduler():
