@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  inboxpilot:
+    build: .
+    container_name: inboxpilot_ai
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    volumes:
+      - ./inboxpilot.db:/app/inboxpilot.db
+      - ./token.json:/app/token.json
+      - ./credentials.json:/app/credentials.json
+      - ./logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

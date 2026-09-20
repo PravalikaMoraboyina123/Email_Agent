@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>InboxPilot AI Mobile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        header {
+            text-align: center;
+            padding: 12px 0 20px 0;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #38bdf8, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            color: #ffffff;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            border: none;
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+            grid-column: span 2;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .email-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-placement { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+        .badge-internship { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+        .badge-important { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-general { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+
+        .score-pill {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        .subject {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .sender {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .summary {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        .status-banner {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 InboxPilot AI Mobile</h1>
+        <p>Personal Email Assistant & Voice Agent</p>
+    </header>
+
+    <div class="status-banner" id="statusBanner">
+        ✅ Connected to InboxPilot Engine
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="btnPlayBriefing" onclick="playPhoneBriefing()">
+            🔊 Read Spoken Briefing on Phone
+        </button>
+        <button class="btn btn-success" onclick="triggerScan()">
+            🔄 Scan Gmail Inbox Now
+        </button>
+        <button class="btn" onclick="stopSpeech()">
+            ⏹️ Stop Audio
+        </button>
+    </div>
+
+    <div id="emailList">
+        <div style="text-align: center; padding: 30px; color: #94a3b8;">
+            Loading your email briefings...
+        </div>
+    </div>
+
+    <script>
+        let currentBriefingText = "";
+
+        async function loadEmails() {
+            try {
+                const res = await fetch('/emails/?limit=15');
+                const emails = await res.json();
+                const container = document.getElementById('emailList');
+
+                if (!emails || emails.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding: 20px; color:#cbd5e1;">No emails stored yet. Tap <b>"🔄 Scan Gmail Inbox Now"</b> above to fetch your emails!</div>';
+                    currentBriefingText = "No emails found. Please tap scan inbox to analyze your latest messages.";
+                    return;
+                }
+
+                let html = "";
+                let briefingItems = [];
+
+                emails.forEach((e, idx) => {
+                    const badgeClass = e.category === 'Placement' ? 'badge-placement' : 
+                                      e.category === 'Internship' ? 'badge-internship' : 
+                                      e.category === 'Advertisement' ? 'badge-general' : 'badge-important';
+                    
+                    const senderName = (e.sender || 'Sender').split('<')[0].replace(/"/g, '').trim();
+                    const cleanSummary = (e.summary || e.subject || '').replace(/'/g, "");
+                    const cleanAction = (e.recommended_action || 'Review email').replace(/'/g, "");
+                    
+                    briefingItems.push(`Item ${idx+1}: ${e.category || 'Email'} from ${senderName}. ${cleanSummary}. Recommended: ${cleanAction}.`);
+
+                    html += `
+                        <div class="email-card">
+                            <div class="card-header">
+                                <span class="badge ${badgeClass}">${e.category || 'General'}</span>
+                                <span class="score-pill">Priority: ${e.priority_score || 50}/100</span>
+                            </div>
+                            <div class="subject">${e.subject || 'No Subject'}</div>
+                            <div class="sender">From: ${senderName}</div>
+                            <div class="summary">${e.summary || 'Summary unavailable.'}</div>
+                            <div class="actions">
+                                <button class="btn btn-sm" onclick="speakSingle('${e.subject ? e.subject.replace(/'/g, "") : ""}', '${cleanSummary}')">🔊 Listen</button>
+                                <button class="btn btn-sm" onclick="markAction(${e.id}, 'Applied')">✅ Applied</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                currentBriefingText = `Good morning! You have ${emails.length} emails in your summary briefing. ` + briefingItems.slice(0, 5).join(" ");
+                container.innerHTML = html;
+
+            } catch (err) {
+                console.error("Error loading emails:", err);
+                document.getElementById('statusBanner').innerText = "⚠️ Connection error to backend server.";
+            }
+        }
+
+        function playPhoneBriefing() {
+            if (!('speechSynthesis' in window)) {
+                alert("Speech synthesis is not supported on this mobile browser.");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const textToSpeak = currentBriefingText || "Loading briefing...";
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = 0.95;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+            
+            document.getElementById('statusBanner').innerText = "🔊 Reading emails out loud through phone speaker...";
+        }
+
+        function speakSingle(subject, summary) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const text = `Email subject: ${subject}. Summary: ${summary}`;
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                document.getElementById('statusBanner').innerText = "⏹️ Audio playback stopped.";
+            }
+        }
+
+        async function triggerScan() {
+            document.getElementById('statusBanner').innerText = "🔄 Scanning Gmail inbox for emails...";
+            try {
+                await fetch('/emails/scan', { method: 'POST' });
+                document.getElementById('statusBanner').innerText = "✅ Scan complete! Refreshing emails...";
+            } catch(e) {
+                console.error(e);
+            }
+            setTimeout(loadEmails, 1500);
+        }
+
+        async function markAction(emailId, action) {
+            await fetch(`/emails/${emailId}/interact?action=${action}`, { method: 'POST' });
+            document.getElementById('statusBanner').innerText = `✅ Marked as ${action}`;
+        }
+
+        // Initial Load
+        loadEmails();
+    </script>
+</body>
+</html>

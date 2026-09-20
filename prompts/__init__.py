@@ -1,0 +1,16 @@
+"""
+Prompt Engineering Templates for Ollama LLM
+"""
+from prompts.email_prompts import (
+    EMAIL_ANALYSIS_SYSTEM_PROMPT,
+    EMAIL_ANALYSIS_USER_PROMPT,
+    MORNING_BRIEFING_PROMPT,
+    EVENING_BRIEFING_PROMPT
+)
+
+__all__ = [
+    "EMAIL_ANALYSIS_SYSTEM_PROMPT",
+    "EMAIL_ANALYSIS_USER_PROMPT",
+    "MORNING_BRIEFING_PROMPT",
+    "EVENING_BRIEFING_PROMPT"
+]
