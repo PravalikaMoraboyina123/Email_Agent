@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     MORNING_ROUTINE_TIME: str = "06:00"
     EVENING_ROUTINE_TIME: str = "21:00"
     LIVE_SCAN_INTERVAL_MINUTES: int = 5
-    EMAIL_CHECK_INTERVAL_SECONDS: int = 60
+    EMAIL_CHECK_INTERVAL_SECONDS: int = 30
 
     # Voice / Speech Settings
     VOICE_ENABLED: bool = True
