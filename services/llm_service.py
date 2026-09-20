@@ -128,10 +128,10 @@ class OllamaLLMService:
 
     def generate_morning_briefing_script(self, emails_summary_list: list) -> str:
         """
-        Generates a concise spoken morning script for unread important emails.
+        Generates a concise spoken morning script for all emails in the supplied window.
         """
         if not emails_summary_list:
-            return "Good morning. You have no urgent unread emails today. Have a productive day ahead!"
+            return "Good morning. There are no emails in the briefing window. Have a productive day ahead!"
 
         # Create structured per-email summaries for spoken delivery
         detailed_parts = []
@@ -165,13 +165,13 @@ class OllamaLLMService:
 
     def generate_evening_briefing_script(self, daily_stats: dict, unread_important: list) -> str:
         """
-        Generates a concise spoken evening review script for 9 PM routine.
+        Generates a concise spoken evening review script for all emails received today.
         """
         stats_text = ", ".join([f"{count} {cat}" for cat, count in daily_stats.items()]) or "no emails"
         
         unopened_parts = []
         for idx, e in enumerate(unread_important, 1):
-            item_str = f"Item {idx}: {e['subject']}."
+            item_str = f"Email {idx}: {e.get('category', 'Notice')} from {e.get('sender', 'unknown sender')}. {e.get('summary', e['subject'])}."
             if e.get('deadline'):
                 item_str += f" Deadline: {e['deadline']}."
             unopened_parts.append(item_str)
