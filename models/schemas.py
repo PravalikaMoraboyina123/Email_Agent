@@ -84,6 +84,10 @@ class EmailResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class FocusModeRequest(BaseModel):
+    enabled: bool = Field(..., description="Enable or disable silent Focus Mode.")
+
+
 class PreferenceSchema(BaseModel):
     key_type: str
     key_value: str
