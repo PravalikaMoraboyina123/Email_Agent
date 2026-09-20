@@ -4,6 +4,7 @@ Prevents processing identical emails twice and maintains audit history in SQLite
 """
 
 from typing import Optional, List
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from models.domain import EmailRecord, RoutineLog
 from models.schemas import EmailAnalysisSchema
@@ -93,9 +94,22 @@ class MemoryManager:
 
     def get_today_emails(self, db: Session) -> List[EmailRecord]:
         """
-        Fetches all emails processed today for evening review.
+        Fetches emails processed since the start of the current local day.
         """
-        return db.query(EmailRecord).order_by(EmailRecord.created_at.desc()).all()
+        now = datetime.now()
+        start_of_day = datetime(now.year, now.month, now.day)
+        return db.query(EmailRecord).filter(
+            EmailRecord.created_at >= start_of_day
+        ).order_by(EmailRecord.created_at.desc()).all()
+
+    def get_recent_emails(self, db: Session, hours: int = 24) -> List[EmailRecord]:
+        """
+        Fetches emails processed during the requested recent time window.
+        """
+        cutoff = datetime.now() - timedelta(hours=hours)
+        return db.query(EmailRecord).filter(
+            EmailRecord.created_at >= cutoff
+        ).order_by(EmailRecord.created_at.desc()).all()
 
     def log_routine_execution(self, db: Session, routine_type: str, count: int, speech: str, spoken: bool = True) -> RoutineLog:
         """
